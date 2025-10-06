@@ -1,3 +1,4 @@
+
 import { Router } from "express";
 import models from "../models/index.js";
 
@@ -18,7 +19,9 @@ router.get("/", async (req, res) => {
 router.get("/:messageId", async (req, res) => {
   try {
     const message = await models.Message.findByPk(req.params.messageId);
-    if (!message) return res.status(404).json({ error: "Mensagem não encontrada" });
+    if (!message) {
+      return res.status(404).json({ error: "Mensagem não encontrada" });
+    }
     return res.json(message);
   } catch (error) {
     console.error(error);
@@ -29,15 +32,34 @@ router.get("/:messageId", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    
-    const message = await models.Message.create({
-      text: req.body.text,
-      userId: req.body.userId, 
-    });
-    return res.status(201).json(message); // 201 CREATED
+    const { text, userId } = req.body;
+    if (!text || !userId) {
+      return res.status(400).json({ error: "Campos obrigatórios: text, userId" });
+    }
+
+    const message = await models.Message.create({ text, userId });
+    return res.status(201).json(message); 
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Erro interno no servidor" });
+    return res.status(500).json({ error: "Erro ao criar mensagem" });
+  }
+});
+
+
+router.put("/:messageId", async (req, res) => {
+  try {
+    const message = await models.Message.findByPk(req.params.messageId);
+    if (!message) {
+      return res.status(404).json({ error: "Mensagem não encontrada" });
+    }
+
+    const { text } = req.body;
+    await message.update({ text });
+
+    return res.json(message);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Erro ao atualizar mensagem" });
   }
 });
 
@@ -45,14 +67,15 @@ router.post("/", async (req, res) => {
 router.delete("/:messageId", async (req, res) => {
   try {
     const message = await models.Message.findByPk(req.params.messageId);
-    if (!message) return res.status(404).json({ error: "Mensagem não encontrada" });
+    if (!message) {
+      return res.status(404).json({ error: "Mensagem não encontrada" });
+    }
     await message.destroy();
-    return res.status(204).send(); 
+    return res.sendStatus(204); 
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Erro interno no servidor" });
+    return res.status(500).json({ error: "Erro ao deletar mensagem" });
   }
 });
 
 export default router;
-
