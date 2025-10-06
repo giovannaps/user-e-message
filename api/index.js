@@ -12,12 +12,18 @@ app.use(cors({ origin: "*", optionsSuccessStatus: 200 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
 app.use(async (req, res, next) => {
-  req.context = {
-    models,
-    me: await models.User.findByPk(1),
-  };
-  next();
+  try {
+    let me = await models.User.findOne(); 
+    if (!me) {
+      me = await createInitialData(); 
+    }
+    req.context = { models, me };
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 app.use("/", routes.root);
@@ -40,7 +46,7 @@ sequelize
   .catch((err) => console.error("Erro ao conectar com o banco:", err));
 
 async function createInitialData() {
-  await models.User.create(
+  const user = await models.User.create(
     {
       username: "rwieruch",
       email: "rwieruch@email.com",
@@ -60,6 +66,7 @@ async function createInitialData() {
       ],
     }
   );
-  console.log("Usuários, mensagens e tarefas criados!");
+  console.log("Usuário, mensagens e tarefas criados!");
+  return user;
 }
 
