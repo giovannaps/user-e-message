@@ -1,4 +1,3 @@
-
 const getUserModel = (sequelize, { DataTypes }) => {
   const User = sequelize.define(
     "User",
@@ -12,39 +11,29 @@ const getUserModel = (sequelize, { DataTypes }) => {
         type: DataTypes.STRING,
         unique: true,
         allowNull: false,
-        validate: {
-          notEmpty: true,
-        },
+        validate: { notEmpty: true },
       },
       email: {
         type: DataTypes.STRING,
         unique: true,
         allowNull: false,
-        validate: {
-          notEmpty: true,
-          isEmail: true,
-        },
+        validate: { notEmpty: true, isEmail: true },
       },
     },
     {
-      tableName: "users", 
-      timestamps: true,   
+      tableName: "users",
+      timestamps: true,
     }
   );
 
-
-User.associate = (models) => {
-  User.hasMany(models.Message, { as: "messages", foreignKey: "userId", onDelete: "CASCADE" });
-};
-
-
-
+  User.associate = (models) => {
+    User.hasMany(models.Message, { as: "messages", foreignKey: "userId", onDelete: "CASCADE" });
+    User.hasMany(models.Tarefa, { as: "tarefas", foreignKey: "userId", onDelete: "CASCADE" });
+  };
 
   User.findByLogin = async (login) => {
     let user = await User.findOne({ where: { username: login } });
-    if (!user) {
-      user = await User.findOne({ where: { email: login } });
-    }
+    if (!user) user = await User.findOne({ where: { email: login } });
     return user;
   };
 
@@ -52,4 +41,5 @@ User.associate = (models) => {
 };
 
 export default getUserModel;
+
 

@@ -2,7 +2,7 @@ const getTarefaModel = (sequelize, { DataTypes }) => {
   const Tarefa = sequelize.define(
     "Tarefa",
     {
-      objectId: {
+      id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
@@ -10,9 +10,7 @@ const getTarefaModel = (sequelize, { DataTypes }) => {
       descricao: {
         type: DataTypes.STRING,
         allowNull: false,
-        validate: {
-          notEmpty: true,
-        },
+        validate: { notEmpty: true },
       },
       concluida: {
         type: DataTypes.BOOLEAN,
@@ -25,7 +23,12 @@ const getTarefaModel = (sequelize, { DataTypes }) => {
     }
   );
 
+  Tarefa.associate = (models) => {
+    Tarefa.belongsTo(models.User, { as: "user", foreignKey: "userId" });
+  };
+
   return Tarefa;
 };
 
 export default getTarefaModel;
+
