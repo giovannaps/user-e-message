@@ -9,6 +9,7 @@ import tarefasRoutes from "./routes/tarefas.js";
 const app = express();
 const port = process.env.PORT ?? 3000;
 
+
 const corsOptions = {
   origin: ["http://example.com", "*"],
   optionsSuccessStatus: 200,
@@ -34,6 +35,7 @@ app.use(async (req, res, next) => {
   next();
 });
 
+
 app.use("/", routes.root);
 app.use("/session", routes.session);
 app.use("/users", routes.user);
@@ -50,7 +52,7 @@ sequelize
     console.log("Banco sincronizado!");
 
     if (eraseDatabaseOnSync) {
-      await createUsersWithMessages();
+      await createInitialData();
     }
 
     app.listen(port, () => {
@@ -62,9 +64,7 @@ sequelize
   });
 
 
-// Função para criar dados iniciais
-// =======================
-const createUsersWithMessages = async () => {
+async function createInitialData() {
   try {
     await models.User.create(
       {
@@ -74,14 +74,21 @@ const createUsersWithMessages = async () => {
           { text: "Published the Road to learn React" },
           { text: "Published also the Road to learn Express + PostgreSQL" },
         ],
+        tarefas: [
+          { titulo: "Primeira tarefa", descricao: "Tarefa de teste" },
+          { titulo: "Segunda tarefa", descricao: "Outra tarefa" },
+        ],
       },
-      { include: [{ model: models.Message, as: "messages" }] }
+      {
+        include: [
+          { model: models.Message, as: "messages" },
+          { model: models.Tarefa, as: "tarefas" },
+        ],
+      }
     );
 
-    await sequelize.sync({ alter: true });
-    console.log("Tabela Tarefa sincronizada!");
-    console.log("Usuários e mensagens criados!");
+    console.log("Usuários, mensagens e tarefas criados!");
   } catch (error) {
     console.error("Erro ao criar dados iniciais:", error);
   }
-};
+}
